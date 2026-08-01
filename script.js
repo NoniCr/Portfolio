@@ -1,28 +1,3 @@
-/*
-MIT License
-
-Copyright (c) 2017 Pavel Dobryakov
-Adapted by Thomas Kabalin
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 "use strict";
 
 function resizeCanvas() {
@@ -1090,6 +1065,10 @@ function runSimulation(config) {
       if (p.moved) {
         p.moved = false;
         splatPointer(p);
+        
+        // RESET deltas after the frame processes them
+        p.deltaX = 0;
+        p.deltaY = 0;
       }
     });
   }
@@ -1324,8 +1303,8 @@ function runSimulation(config) {
     while (touches.length >= pointers.length)
       pointers.push(new pointerPrototype());
     for (let i = 0; i < touches.length; i++) {
-      let posX = scaleByPixelRatio(touches[i].clientX);
-      let posY = scaleByPixelRatio(touches[i].clientY);
+      let posX = touches[i].clientX;
+      let posY = touches[i].clientY;
       updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY);
     }
   });
@@ -1337,8 +1316,8 @@ function runSimulation(config) {
       for (let i = 0; i < touches.length; i++) {
         let pointer = pointers[i + 1];
         if (!pointer.down) continue;
-        let posX = scaleByPixelRatio(touches[i].clientX);
-        let posY = scaleByPixelRatio(touches[i].clientY);
+        let posX = touches[i].clientX;
+        let posY = touches[i].clientY;
         updatePointerMoveData(pointer, posX, posY);
       }
     },
@@ -1375,14 +1354,16 @@ function runSimulation(config) {
     pointer.texcoordX = posX / window.innerWidth;
     pointer.texcoordY = 1.0 - posY / window.innerHeight;
     
-    // Resolution-independent normalized delta
     let deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
     let deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
     
-    // Scale delta relative to standard 1080p reference viewport
     let refScale = Math.min(window.innerWidth, window.innerHeight) / 1080.0;
-    pointer.deltaX = deltaX * refScale;
-    pointer.deltaY = deltaY * refScale;
+    
+    // ACCUMULATE the deltas instead of overwriting them
+    pointer.deltaX += deltaX * refScale;
+    pointer.deltaY += deltaY * refScale;
+    
+    // Only check if it moved based on the new accumulated total
     pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
   }
 
