@@ -1374,8 +1374,15 @@ function runSimulation(config) {
     pointer.prevTexcoordY = pointer.texcoordY;
     pointer.texcoordX = posX / window.innerWidth;
     pointer.texcoordY = 1.0 - posY / window.innerHeight;
-    pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 3.0;
-    pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 3.0;
+    
+    // Resolution-independent normalized delta
+    let deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
+    let deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
+    
+    // Scale delta relative to standard 1080p reference viewport
+    let refScale = Math.min(window.innerWidth, window.innerHeight) / 1080.0;
+    pointer.deltaX = deltaX * refScale;
+    pointer.deltaY = deltaY * refScale;
     pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
   }
 
