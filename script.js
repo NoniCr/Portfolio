@@ -1440,4 +1440,29 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
     observer.observe(el);
   });
+
+  // Background Audio Controller
+  const bgMusic = document.getElementById('bg-music');
+
+  if (bgMusic) {
+    let isStarted = false;
+
+    function startMusic() {
+      if (isStarted) return;
+      bgMusic.play().then(() => {
+        isStarted = true;
+        window.removeEventListener('click', startMusic);
+        window.removeEventListener('scroll', startMusic);
+        window.removeEventListener('keydown', startMusic);
+        window.removeEventListener('touchstart', startMusic);
+      }).catch(() => {});
+    }
+
+    startMusic();
+
+    window.addEventListener('click', startMusic);
+    window.addEventListener('scroll', startMusic);
+    window.addEventListener('keydown', startMusic);
+    window.addEventListener('touchstart', startMusic);
+  }
 });
