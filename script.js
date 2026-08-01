@@ -1446,67 +1446,100 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(el);
   });
 
-  // Background Audio Controller
+  // Background Audio Controller with Console Logging
   const bgMusic = document.getElementById('bg-music');
   const audioBtn = document.getElementById('audio-toggle');
   const iconOn = document.getElementById('audio-icon-on');
   const iconOff = document.getElementById('audio-icon-off');
 
   if (bgMusic) {
+    console.log('[Audio] Initializing background music controller...', bgMusic.src);
+    bgMusic.muted = false;
+
     function updateIcons() {
-      const isAudible = !bgMusic.paused && !bgMusic.muted;
-      if (iconOn) iconOn.style.display = isAudible ? 'block' : 'none';
-      if (iconOff) iconOff.style.display = isAudible ? 'none' : 'block';
+      const isPlaying = !bgMusic.paused && !bgMusic.muted;
+      console.log('[Audio] State update -> paused:', bgMusic.paused, 'muted:', bgMusic.muted, 'isPlaying:', isPlaying);
+      if (iconOn) iconOn.style.display = isPlaying ? 'block' : 'none';
+      if (iconOff) iconOff.style.display = isPlaying ? 'none' : 'block';
     }
 
-    function enableSound() {
+    function playAudio() {
+      console.log('[Audio] Triggering playAudio()... readyState:', bgMusic.readyState);
       bgMusic.muted = false;
-      if (bgMusic.paused) {
-        bgMusic.play().catch(() => {});
+      if (bgMusic.readyState === 0) {
+        console.log('[Audio] readyState is 0, calling load()...');
+        bgMusic.load();
       }
-      updateIcons();
+      const playPromise = bgMusic.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('[Audio] Playback started successfully!');
+            updateIcons();
+          })
+          .catch((err) => {
+            console.warn('[Audio] Play failed:', err.message);
+            updateIcons();
+          });
+      }
     }
 
     function toggleAudio() {
-      if (bgMusic.muted || bgMusic.paused) {
-        enableSound();
+      console.log('[Audio] Toggle button clicked. Current paused:', bgMusic.paused, 'muted:', bgMusic.muted);
+      if (bgMusic.paused || bgMusic.muted) {
+        playAudio();
       } else {
-        bgMusic.muted = true;
+        console.log('[Audio] Pausing audio...');
+        bgMusic.pause();
         updateIcons();
       }
     }
 
-    function startMusicOnInteraction() {
-      enableSound();
+    function handleFirstUserInteraction() {
+      console.log('[Audio] First user interaction detected on window.');
       removeInteractionListeners();
+      playAudio();
     }
 
     function removeInteractionListeners() {
-      window.removeEventListener('click', startMusicOnInteraction);
-      window.removeEventListener('scroll', startMusicOnInteraction);
-      window.removeEventListener('keydown', startMusicOnInteraction);
-      window.removeEventListener('touchstart', startMusicOnInteraction);
+      window.removeEventListener('click', handleFirstUserInteraction);
+      window.removeEventListener('scroll', handleFirstUserInteraction);
+      window.removeEventListener('keydown', handleFirstUserInteraction);
+      window.removeEventListener('touchstart', handleFirstUserInteraction);
     }
 
-    bgMusic.addEventListener('play', updateIcons);
-    bgMusic.addEventListener('pause', updateIcons);
-    bgMusic.addEventListener('volumechange', updateIcons);
+    bgMusic.addEventListener('play', () => {
+      console.log('[Audio] Event: play');
+      updateIcons();
+    });
+
+    bgMusic.addEventListener('pause', () => {
+      console.log('[Audio] Event: pause');
+      updateIcons();
+    });
+
+    bgMusic.addEventListener('error', (e) => {
+      console.error('[Audio] Audio element error:', e);
+    });
 
     if (audioBtn) {
       audioBtn.addEventListener('click', (e) => {
+        console.log('[Audio] Audio toggle button clicked directly.');
+        e.preventDefault();
         e.stopPropagation();
-        toggleAudio();
         removeInteractionListeners();
+        toggleAudio();
       });
     }
 
     // Try starting audio immediately
-    bgMusic.play().catch(() => {});
-    updateIcons();
+    playAudio();
 
-    window.addEventListener('click', startMusicOnInteraction);
-    window.addEventListener('scroll', startMusicOnInteraction);
-    window.addEventListener('keydown', startMusicOnInteraction);
-    window.addEventListener('touchstart', startMusicOnInteraction);
+    window.addEventListener('click', handleFirstUserInteraction);
+    window.addEventListener('scroll', handleFirstUserInteraction);
+    window.addEventListener('keydown', handleFirstUserInteraction);
+    window.addEventListener('touchstart', handleFirstUserInteraction);
+  } else {
+    console.error('[Audio] #bg-music element not found in DOM!');
   }
 });
