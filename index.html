@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noni | Portfolio</title>
+  <title>Noni | Luau & WebGL Developer</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +15,16 @@
 
   <!-- Background Music -->
   <audio id="bg-music" src="mondamusic-lofi-beats-560158.mp3" autoplay loop preload="auto"></audio>
+
+  <!-- Audio Mute Button (Fixed Bottom Left) -->
+  <button id="audio-toggle" class="audio-btn fixed-bottom-left" aria-label="Toggle background music">
+    <svg id="audio-icon-on" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.74 2.5-2.26 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+    </svg>
+    <svg id="audio-icon-off" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display: none;">
+      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+    </svg>
+  </button>
 
   <!-- Navigation Header -->
   <header class="nav-wrapper">
@@ -32,9 +42,9 @@
     <!-- Hero Section -->
     <section class="section hero">
       <div class="hero-content">
-        <span class="hero-eyebrow">Luau Developer</span>
+        <span class="hero-eyebrow">Luau & Systems Developer</span>
         <h1 class="hero-main-title">Noni</h1>
-        <p class="hero-subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+        <p class="hero-subtitle">Engineering high-performance Roblox game frameworks, real-time WebGL physics simulations, and scalable networked backend infrastructure.</p>
       </div>
     </section>
 
@@ -45,59 +55,59 @@
         <article class="work-item reveal-on-scroll">
           <span class="work-num">01</span>
           <div class="work-info">
-            <h2>Lorem Ipsum Dolor</h2>
-            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat.</p>
+            <h2>Custom WebGL Fluid Engine</h2>
+            <p>Real-time Navier-Stokes fluid dynamics simulation running in WebGL with interactive advection, curl vorticity, and scroll-driven momentum visualizers.</p>
           </div>
         </article>
 
         <article class="work-item reveal-on-scroll">
           <span class="work-num">02</span>
           <div class="work-info">
-            <h2>Excepteur Sint</h2>
-            <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <h2>Luau Network Replication Framework</h2>
+            <p>Ultra-low-latency state synchronization module built for large-scale multiplayer Roblox environments with custom binary buffer compression.</p>
           </div>
         </article>
 
         <article class="work-item reveal-on-scroll">
           <span class="work-num">03</span>
           <div class="work-info">
-            <h2>Consectetur Adipiscing</h2>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+            <h2>Custom Physics Particle System</h2>
+            <p>High-density GPU-accelerated particle solver with spatial partitioning for fast collision queries and complex soft-body interactions.</p>
           </div>
         </article>
 
         <article class="work-item reveal-on-scroll">
           <span class="work-num">04</span>
           <div class="work-info">
-            <h2>Tempor Incididunt</h2>
-            <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos.</p>
+            <h2>Distributed Microservices Backend</h2>
+            <p>Scalable cross-server matchmaking, datastore caching layer, and WebSocket messaging pipeline handling millions of daily player sessions.</p>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- Core Capabilities Section (Simplified) -->
+    <!-- Core Capabilities Section -->
     <section id="about" class="section reveal-on-scroll">
       <div class="section-label">CORE CAPABILITIES</div>
       <div class="capabilities-grid">
         <div class="capability-item reveal-on-scroll">
           <h3>Systems</h3>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. High performance networked state systems.</p>
+          <p>High-performance networked state systems, memory optimization, and custom event loops in Luau.</p>
         </div>
 
         <div class="capability-item reveal-on-scroll">
           <h3>Physics</h3>
-          <p>Praesent libero. Custom WebGL shaders, particle dynamics, and fluid advection engines.</p>
+          <p>Custom WebGL shaders, real-time particle dynamics, and fluid advection simulation engines.</p>
         </div>
 
         <div class="capability-item reveal-on-scroll">
           <h3>Roblox</h3>
-          <p>Elementum imperdiet. Large scale multiplayer gameplay frameworks and replication modules.</p>
+          <p>Large-scale multiplayer gameplay frameworks, data persistence modules, and modular ECS architectures.</p>
         </div>
 
         <div class="capability-item reveal-on-scroll">
           <h3>Architecture</h3>
-          <p>Vestibulum lacinia arcu eget nulla. Distributed microservices, web sockets, and APIs.</p>
+          <p>Distributed backend services, WebSockets, real-time API integrations, and scalable cloud databases.</p>
         </div>
       </div>
     </section>
@@ -146,6 +156,7 @@
 
   <footer class="footer center">
     <p>Background inspired by <a href="https://github.com/tkabalin/WebGL-Fluid-Background/tree/master" target="_blank" rel="noopener noreferrer">tkabalin / WebGL-Fluid-Background</a></p>
+    <p class="copyright">@NoniCr 2026</p>
   </footer>
 
   <script src="script.js"></script>

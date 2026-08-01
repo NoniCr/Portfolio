@@ -74,6 +74,7 @@ body {
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 3.5rem;
 }
 
@@ -106,6 +107,35 @@ body {
   color: #ffffff;
 }
 
+.audio-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: var(--transition);
+}
+
+.audio-btn.fixed-bottom-left {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.audio-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+  transform: scale(1.1);
+}
+
 /* Main Sections Layout */
 main {
   position: relative;
@@ -114,7 +144,7 @@ main {
 
 .section {
   min-height: 100vh;
-  padding: 10rem 5rem 6rem 5rem;
+  padding: 5rem 5rem 3rem 5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -199,21 +229,21 @@ main {
   text-transform: uppercase;
   letter-spacing: 4px;
   color: var(--text-muted);
-  margin-bottom: 4.5rem;
+  margin-bottom: 2.5rem;
 }
 
 /* Work List & Emergence Animations */
 .work-list {
   display: flex;
   flex-direction: column;
-  gap: 4.5rem;
+  gap: 2.2rem;
 }
 
 .work-item {
   display: flex;
   align-items: baseline;
-  gap: 4rem;
-  padding-bottom: 2.5rem;
+  gap: 3rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
 }
@@ -288,6 +318,7 @@ main {
   position: relative;
   width: 680px;
   height: 680px;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -426,10 +457,19 @@ main {
   color: #ffffff;
 }
 
+.footer .copyright {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
+  .nav-wrapper { padding: 2rem 2.5rem; }
+  .section { padding: 8rem 2.5rem 4rem 2.5rem; }
   .hero-main-title { font-size: 5.2rem; }
-  .capabilities-grid { grid-template-columns: 1fr; }
+  .capabilities-grid { grid-template-columns: repeat(2, 1fr); }
   .contact-ring-container { width: 440px; height: 440px; }
   .contact-ring-center h2 { font-size: 2.8rem; }
   .contact-ring-container.is-visible .icon-discord { transform: translate(0px, -180px) scale(1); }
@@ -437,4 +477,23 @@ main {
   .contact-ring-container.is-visible .icon-x { transform: translate(105px, 145px) scale(1); }
   .contact-ring-container.is-visible .icon-roblox { transform: translate(-105px, 145px) scale(1); }
   .contact-ring-container.is-visible .icon-youtube { transform: translate(-171px, -55px) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .nav-wrapper { padding: 1.5rem 1.5rem; }
+  .nav-links { gap: 1.5rem; }
+  .section { padding: 6rem 1.5rem 3rem 1.5rem; }
+  .hero-main-title { font-size: 3.8rem; }
+  .hero-subtitle { font-size: 1.1rem; }
+  .work-item { flex-direction: column; gap: 1rem; }
+  .work-num { min-width: auto; }
+  .capabilities-grid { grid-template-columns: 1fr; }
+  .contact-ring-container { width: 320px; height: 320px; }
+  .contact-ring-center h2 { font-size: 2rem; }
+  .contact-icon { width: 56px; height: 56px; margin-top: -28px; margin-left: -28px; }
+  .contact-ring-container.is-visible .icon-discord { transform: translate(0px, -130px) scale(1); }
+  .contact-ring-container.is-visible .icon-github { transform: translate(123px, -40px) scale(1); }
+  .contact-ring-container.is-visible .icon-x { transform: translate(76px, 105px) scale(1); }
+  .contact-ring-container.is-visible .icon-roblox { transform: translate(-76px, 105px) scale(1); }
+  .contact-ring-container.is-visible .icon-youtube { transform: translate(-123px, -40px) scale(1); }
 }

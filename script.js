@@ -926,19 +926,30 @@ function runSimulation(config) {
   updateKeywords();
   initFramebuffers();
 
-  let lastUpdateTime = Date.now();
+  let lastUpdateTime = performance.now();
   let colorUpdateTimer = 0.0;
   let autoTimer = 0.0;
 
+  let textElementsCache = null;
+  function getCachedTextElements() {
+    if (!textElementsCache) {
+      textElementsCache = document.querySelectorAll('h1, h2, p, .nav-brand, .nav-links a, .work-item');
+    }
+    return textElementsCache;
+  }
+
   function isOverText(px, py) {
-    const textElements = document.querySelectorAll('h1, h2, p, .nav-brand, .nav-links a, .work-item');
+    const textElements = getCachedTextElements();
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
     for (let i = 0; i < textElements.length; i++) {
       const rect = textElements[i].getBoundingClientRect();
-      const pageLeft = rect.left + window.scrollX;
-      const pageRight = rect.right + window.scrollX;
-      const pageTop = rect.top + window.scrollY;
-      const pageBottom = rect.bottom + window.scrollY;
-      if (px >= pageLeft && px <= pageRight && py >= pageTop && py <= pageBottom) {
+      if (
+        px >= rect.left + scrollX &&
+        px <= rect.right + scrollX &&
+        py >= rect.top + scrollY &&
+        py <= rect.bottom + scrollY
+      ) {
         return true;
       }
     }
@@ -966,7 +977,7 @@ function runSimulation(config) {
     activeCurves.push({
       p0x, p0y, p1x, p1y, p2x, p2y,
       progress: 0,
-      speed: 0.3 + Math.random() * 0.4,
+      speed: 0.12 + Math.random() * 0.18,
       prevDocX: p0x,
       prevDocY: p0y
     });
@@ -1010,12 +1021,6 @@ function runSimulation(config) {
 
   let nextCurveInterval = 0.5 + Math.random() * 0.8;
 
-  // Initial fluid splats immediately on page load
-  multipleSplats(parseInt(Math.random() * 5) + 5);
-  for (let i = 0; i < 3; i++) {
-    startRandomCurve();
-  }
-
   update();
 
   function update() {
@@ -1039,7 +1044,7 @@ function runSimulation(config) {
   }
 
   function calcDeltaTime() {
-    let now = Date.now();
+    let now = performance.now();
     let dt = (now - lastUpdateTime) / 1000;
     dt = Math.min(dt, 0.016666);
     lastUpdateTime = now;
@@ -1443,26 +1448,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Background Audio Controller
   const bgMusic = document.getElementById('bg-music');
+  const audioBtn = document.getElementById('audio-toggle');
+  const iconOn = document.getElementById('audio-icon-on');
+  const iconOff = document.getElementById('audio-icon-off');
 
   if (bgMusic) {
-    let isStarted = false;
-
-    function startMusic() {
-      if (isStarted) return;
-      bgMusic.play().then(() => {
-        isStarted = true;
-        window.removeEventListener('click', startMusic);
-        window.removeEventListener('scroll', startMusic);
-        window.removeEventListener('keydown', startMusic);
-        window.removeEventListener('touchstart', startMusic);
-      }).catch(() => {});
+    function updateIcons() {
+      const isAudible = !bgMusic.paused && !bgMusic.muted;
+      if (iconOn) iconOn.style.display = isAudible ? 'block' : 'none';
+      if (iconOff) iconOff.style.display = isAudible ? 'none' : 'block';
     }
 
-    startMusic();
+    function enableSound() {
+      bgMusic.muted = false;
+      if (bgMusic.paused) {
+        bgMusic.play().catch(() => {});
+      }
+      updateIcons();
+    }
 
-    window.addEventListener('click', startMusic);
-    window.addEventListener('scroll', startMusic);
-    window.addEventListener('keydown', startMusic);
-    window.addEventListener('touchstart', startMusic);
+    function toggleAudio() {
+      if (bgMusic.muted || bgMusic.paused) {
+        enableSound();
+      } else {
+        bgMusic.muted = true;
+        updateIcons();
+      }
+    }
+
+    function startMusicOnInteraction() {
+      enableSound();
+      removeInteractionListeners();
+    }
+
+    function removeInteractionListeners() {
+      window.removeEventListener('click', startMusicOnInteraction);
+      window.removeEventListener('scroll', startMusicOnInteraction);
+      window.removeEventListener('keydown', startMusicOnInteraction);
+      window.removeEventListener('touchstart', startMusicOnInteraction);
+    }
+
+    bgMusic.addEventListener('play', updateIcons);
+    bgMusic.addEventListener('pause', updateIcons);
+    bgMusic.addEventListener('volumechange', updateIcons);
+
+    if (audioBtn) {
+      audioBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleAudio();
+        removeInteractionListeners();
+      });
+    }
+
+    // Try starting audio immediately
+    bgMusic.play().catch(() => {});
+    updateIcons();
+
+    window.addEventListener('click', startMusicOnInteraction);
+    window.addEventListener('scroll', startMusicOnInteraction);
+    window.addEventListener('keydown', startMusicOnInteraction);
+    window.addEventListener('touchstart', startMusicOnInteraction);
   }
 });
