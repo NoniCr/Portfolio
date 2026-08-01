@@ -1305,8 +1305,8 @@ function runSimulation(config) {
   // Attach mouse movements to WINDOW (fixes pointer-events: none on canvas)
   window.addEventListener("mousemove", (e) => {
     let pointer = pointers[0];
-    let posX = scaleByPixelRatio(e.clientX);
-    let posY = scaleByPixelRatio(e.clientY);
+    let posX = e.clientX;
+    let posY = e.clientY;
 
     if (!pointer.down) {
       updatePointerDownData(pointer, -1, posX, posY);
@@ -1360,8 +1360,8 @@ function runSimulation(config) {
     pointer.id = id;
     pointer.down = true;
     pointer.moved = false;
-    pointer.texcoordX = posX / canvas.width;
-    pointer.texcoordY = 1.0 - posY / canvas.height;
+    pointer.texcoordX = posX / window.innerWidth;
+    pointer.texcoordY = 1.0 - posY / window.innerHeight;
     pointer.prevTexcoordX = pointer.texcoordX;
     pointer.prevTexcoordY = pointer.texcoordY;
     pointer.deltaX = 0;
@@ -1372,12 +1372,10 @@ function runSimulation(config) {
   function updatePointerMoveData(pointer, posX, posY) {
     pointer.prevTexcoordX = pointer.texcoordX;
     pointer.prevTexcoordY = pointer.texcoordY;
-    pointer.texcoordX = posX / canvas.width;
-    pointer.texcoordY = 1.0 - posY / canvas.height;
-    let rawDx = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 2.0;
-    let rawDy = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 2.0;
-    pointer.deltaX = Math.min(Math.max(rawDx, -2.0), 2.0);
-    pointer.deltaY = Math.min(Math.max(rawDy, -2.0), 2.0);
+    pointer.texcoordX = posX / window.innerWidth;
+    pointer.texcoordY = 1.0 - posY / window.innerHeight;
+    pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 3.0;
+    pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 3.0;
     pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
   }
 
