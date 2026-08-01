@@ -82,6 +82,8 @@ fetch("config.json")
   });
 
 function runSimulation(config) {
+  let lastScrollY = window.scrollY;
+
   function pointerPrototype() {
     this.id = -1;
     this.texcoordX = 0;
@@ -522,6 +524,7 @@ function runSimulation(config) {
     uniform vec2 dyeTexelSize;
     uniform float dt;
     uniform float dissipation;
+    uniform float uScrollDelta;
 
     vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
         vec2 st = uv / tsize - 0.5;
@@ -538,11 +541,16 @@ function runSimulation(config) {
     }
 
     void main () {
+        vec2 uv = vUv - vec2(0.0, uScrollDelta);
+        if (uv.y < 0.0 || uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0) {
+            gl_FragColor = vec4(0.0);
+            return;
+        }
     #ifdef MANUAL_FILTERING
-        vec2 coord = vUv - dt * bilerp(uVelocity, vUv, texelSize).xy * texelSize;
+        vec2 coord = uv - dt * bilerp(uVelocity, uv, texelSize).xy * texelSize;
         vec4 result = bilerp(uSource, coord, dyeTexelSize);
     #else
-        vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
+        vec2 coord = uv - dt * texture2D(uVelocity, uv).xy * texelSize;
         vec4 result = texture2D(uSource, coord);
     #endif
         float decay = 1.0 + dissipation * dt;
@@ -951,7 +959,11 @@ function runSimulation(config) {
     const textElements = document.querySelectorAll('h1, h2, p, .nav-brand, .nav-links a, .work-item');
     for (let i = 0; i < textElements.length; i++) {
       const rect = textElements[i].getBoundingClientRect();
-      if (px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom) {
+      const pageLeft = rect.left + window.scrollX;
+      const pageRight = rect.right + window.scrollX;
+      const pageTop = rect.top + window.scrollY;
+      const pageBottom = rect.bottom + window.scrollY;
+      if (px >= pageLeft && px <= pageRight && py >= pageTop && py <= pageBottom) {
         return true;
       }
     }
@@ -960,15 +972,19 @@ function runSimulation(config) {
 
   let activeCurves = [];
 
-  // Animated Bezier Curve Fluid Tracer (Ramps fluid up slowly)
+  // Animated Bezier Curve Fluid Tracer (Document Space)
   function startRandomCurve() {
-    let p0x = Math.random(), p0y = Math.random();
-    let p1x = Math.random(), p1y = Math.random();
-    let p2x = Math.random(), p2y = Math.random();
+    let docW = window.innerWidth;
+    let docH = document.documentElement.scrollHeight || window.innerHeight;
+
+    let p0x = Math.random() * docW, p0y = Math.random() * docH;
+    let p1x = Math.random() * docW, p1y = Math.random() * docH;
+    let p2x = Math.random() * docW, p2y = Math.random() * docH;
 
     let attempts = 0;
-    while (isOverText(p0x * window.innerWidth, p0y * window.innerHeight) && attempts < 10) {
-      p0x = Math.random(); p0y = Math.random();
+    while (isOverText(p0x, p0y) && attempts < 10) {
+      p0x = Math.random() * docW;
+      p0y = Math.random() * docH;
       attempts++;
     }
 
@@ -976,8 +992,8 @@ function runSimulation(config) {
       p0x, p0y, p1x, p1y, p2x, p2y,
       progress: 0,
       speed: 0.3 + Math.random() * 0.4,
-      prevX: p0x,
-      prevY: p0y
+      prevDocX: p0x,
+      prevDocY: p0y
     });
   }
 
@@ -988,19 +1004,28 @@ function runSimulation(config) {
       let t = Math.min(curve.progress, 1.0);
       let invT = 1.0 - t;
 
-      let x = invT * invT * curve.p0x + 2.0 * invT * t * curve.p1x + t * t * curve.p2x;
-      let y = invT * invT * curve.p0y + 2.0 * invT * t * curve.p1y + t * t * curve.p2y;
+      let docX = invT * invT * curve.p0x + 2.0 * invT * t * curve.p1x + t * t * curve.p2x;
+      let docY = invT * invT * curve.p0y + 2.0 * invT * t * curve.p1y + t * t * curve.p2y;
 
-      let dx = (x - curve.prevX) * 1500;
-      let dy = (y - curve.prevY) * 1500;
-      curve.prevX = x;
-      curve.prevY = y;
+      let dx = (docX - curve.prevDocX) * 1.5;
+      let dy = -(docY - curve.prevDocY) * 1.5;
+      curve.prevDocX = docX;
+      curve.prevDocY = docY;
 
-      // Reduced curve fluid density: 0.02 to 0.15
-      let intensity = 0.02 + 0.15 * (t * t);
-      let color = { r: intensity, g: intensity, b: intensity };
+      // Project Document Space to current Viewport Space
+      let screenX = docX;
+      let screenY = docY - window.scrollY;
 
-      splat(x, y, dx, dy, color);
+      // Only splat if within visible viewport bounds
+      if (screenY >= -50 && screenY <= window.innerHeight + 50) {
+        let normX = screenX / window.innerWidth;
+        let normY = 1.0 - (screenY / window.innerHeight);
+
+        let intensity = 0.02 + 0.15 * (t * t);
+        let color = { r: intensity, g: intensity, b: intensity };
+
+        splat(normX, normY, dx, dy, color);
+      }
 
       if (curve.progress >= 1.0) {
         activeCurves.splice(i, 1);
@@ -1010,7 +1035,8 @@ function runSimulation(config) {
 
   let nextCurveInterval = 0.5 + Math.random() * 0.8;
 
-  // Initial fluid on page load
+  // Initial fluid splats immediately on page load
+  multipleSplats(parseInt(Math.random() * 5) + 5);
   for (let i = 0; i < 3; i++) {
     startRandomCurve();
   }
@@ -1069,6 +1095,11 @@ function runSimulation(config) {
   }
 
   function step(dt) {
+    let currentScrollY = window.scrollY;
+    let scrollDeltaY = currentScrollY - lastScrollY;
+    lastScrollY = currentScrollY;
+    let uScrollDelta = (scrollDeltaY / window.innerHeight);
+
     gl.disable(gl.BLEND);
 
     curlProgram.bind();
@@ -1158,6 +1189,7 @@ function runSimulation(config) {
       advectionProgram.uniforms.dissipation,
       config.VELOCITY_DISSIPATION
     );
+    gl.uniform1f(advectionProgram.uniforms.uScrollDelta, uScrollDelta);
     blit(velocity.write);
     velocity.swap();
 
@@ -1173,6 +1205,7 @@ function runSimulation(config) {
       advectionProgram.uniforms.dissipation,
       config.DENSITY_DISSIPATION
     );
+    gl.uniform1f(advectionProgram.uniforms.uScrollDelta, uScrollDelta);
     blit(dye.write);
     dye.swap();
   }
@@ -1272,8 +1305,8 @@ function runSimulation(config) {
   // Attach mouse movements to WINDOW (fixes pointer-events: none on canvas)
   window.addEventListener("mousemove", (e) => {
     let pointer = pointers[0];
-    let posX = scaleByPixelRatio(e.pageX || e.clientX);
-    let posY = scaleByPixelRatio(e.pageY || e.clientY);
+    let posX = scaleByPixelRatio(e.clientX);
+    let posY = scaleByPixelRatio(e.clientY);
 
     if (!pointer.down) {
       updatePointerDownData(pointer, -1, posX, posY);
@@ -1341,10 +1374,11 @@ function runSimulation(config) {
     pointer.prevTexcoordY = pointer.texcoordY;
     pointer.texcoordX = posX / canvas.width;
     pointer.texcoordY = 1.0 - posY / canvas.height;
-    pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 2.0;
-    pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 2.0;
-    pointer.moved =
-      Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
+    let rawDx = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX) * 2.0;
+    let rawDy = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY) * 2.0;
+    pointer.deltaX = Math.min(Math.max(rawDx, -2.0), 2.0);
+    pointer.deltaY = Math.min(Math.max(rawDy, -2.0), 2.0);
+    pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
   }
 
   function updatePointerUpData(pointer) {
@@ -1404,3 +1438,20 @@ function runSimulation(config) {
     return hash;
   }
 }
+
+// Scroll Reveal Animations via IntersectionObserver (Replays on re-entry)
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+      } else {
+        entry.target.classList.remove('is-visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+    observer.observe(el);
+  });
+});
