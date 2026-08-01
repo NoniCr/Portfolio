@@ -1453,14 +1453,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const iconOff = document.getElementById('audio-icon-off');
 
   if (bgMusic) {
-    console.log('[Audio] Initializing background music controller...', bgMusic.src);
+    console.log('[Audio] Initializing background music controller...');
+    bgMusic.volume = 0.25;
     bgMusic.muted = false;
 
     function updateIcons() {
-      const isPlaying = !bgMusic.paused && !bgMusic.muted;
-      console.log('[Audio] State update -> paused:', bgMusic.paused, 'muted:', bgMusic.muted, 'isPlaying:', isPlaying);
-      if (iconOn) iconOn.style.display = isPlaying ? 'block' : 'none';
-      if (iconOff) iconOff.style.display = isPlaying ? 'none' : 'block';
+      const isUnmuted = !bgMusic.muted;
+      console.log('[Audio] State update -> paused:', bgMusic.paused, 'muted:', bgMusic.muted, 'volume:', bgMusic.volume);
+      if (iconOn) iconOn.style.display = isUnmuted ? 'block' : 'none';
+      if (iconOff) iconOff.style.display = isUnmuted ? 'none' : 'block';
     }
 
     function playAudio() {
